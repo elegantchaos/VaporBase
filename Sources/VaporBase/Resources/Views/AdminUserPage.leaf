@@ -35,20 +35,6 @@
 </form>
 
 <br />
-<h4>Current Session</h4>
-   <li>
-    #for(line in page.current):
-        #(line)
-    #endfor
-   </li>
-
-<br />
-<h4>Previous Sessions</h4>
-#for(transcript in page.transcripts):
-   <li>#(transcript.value)</li>
-#endfor
-
-<br />
 <h4>Actions</h4>
 <div><a href="/admin">Overview</a></div>
 <div><a href="/admin-tokens">All Tokens</a></div>

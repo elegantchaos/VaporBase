@@ -19,7 +19,7 @@ struct Site: Codable {
 }
 
 struct RenderContext<Page>: Codable where Page: LeafPage {
-    internal init(page: Page, user: User?, error: String?, site: SiteConfiguration) {
+    internal init(page: Page, user: User?, error: String?, site: VaporBaseSite) {
         let file = String(describing: Page.self)
 
         self.site = Site(title: site.name)

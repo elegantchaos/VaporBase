@@ -40,12 +40,6 @@ struct AdminController: RouteCollection {
         routes.post(.adminUser, .userParameter, use: requireUser(handlePostAdminUser))
     }
     
-    func unpack(_ data: (([SessionRecord], [User]), [Transcript])) -> ([SessionRecord], [User], [Transcript]) {
-        let (tsu, transcripts) = data
-        let (sessions, users) = tsu
-        return (sessions, users, transcripts)
-    }
-    
     func handleGetAdminIndex(_ req: Request, for loggedInUser: User) -> EventLoopFuture<Response> {
         guard loggedInUser.isAdmin else {
             return req.eventLoop.makeFailedFuture(AdminError.notAdmin)
@@ -88,18 +82,11 @@ struct AdminController: RouteCollection {
         }
 
         let userID = try req.parameters.require("user", as: UUID.self)
-        let transcripts = Transcript
-            .query(on: req.db)
-            .with(\.$user)
-            .filter(\.$user.$id == userID)
-            .all()
-
         let user = User.query(on: req.db).filter(\.$id == userID).first()
         return user
             .unwrap(or: AdminError.unknownUser)
-            .and(transcripts)
-            .flatMap { (user, transcripts) in
-                req.render(AdminUserPage(user: user, transcripts: transcripts), user: loggedInUser) }
+            .flatMap { user in
+                req.render(AdminUserPage(user: user), user: loggedInUser) }
     }
 
     func handlePostAdminUser(_ req: Request, for loggedInUser: User) throws -> EventLoopFuture<Response> {

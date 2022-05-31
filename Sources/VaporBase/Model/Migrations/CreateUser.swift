@@ -4,38 +4,24 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 import Fluent
+import FluentSQL
 import Vapor
 
 extension User {
     static var createMigration: Fluent.Migration {
         SimpleMigration("CreateUser", for: self) { schema in
-            schema
+            let defaultValue = SQLColumnConstraintAlgorithm.default("")
+            return schema
                 .id()
                 .field(.name, .string, .required)
                 .field(.email, .string, .required)
                 .field(.passwordHash, .string, .required)
-                .unique(on: .name)
+                .field(.roles, .string, .sql(defaultValue))
+                .unique(on: .email)
                 .create()
 
         } revert: { schema in
             schema.delete()
-        }
-    }
-}
-
-extension User {
-    static var makeEmailUnique: Fluent.Migration {
-        SimpleMigration("MakeEmailUnique", for: self) { schema in
-            schema
-                .unique(on: .email)
-                .deleteUnique(on: .name)
-                .update()
-
-        } revert: { schema in
-            schema
-                .unique(on: .name)
-                .deleteUnique(on: .email)
-                .update()
         }
     }
 }

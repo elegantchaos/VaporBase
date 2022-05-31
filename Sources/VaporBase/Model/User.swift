@@ -8,7 +8,6 @@ import Fluent
 extension FieldKey {
     static var name: FieldKey = "name"
     static var email: FieldKey = "email"
-    static var history: FieldKey = "history"
     static var passwordHash: FieldKey = "password_hash"
     static var roles: FieldKey = "roles"
 }
@@ -28,9 +27,6 @@ final class User: Model, Content {
     @Field(key: .passwordHash)
     var passwordHash: String
 
-    @Field(key: .history)
-    var history: String
-    
     @Field(key: .roles)
     var roles: String
     
@@ -41,7 +37,6 @@ final class User: Model, Content {
         self.name = name
         self.email = email
         self.passwordHash = passwordHash
-        self.history = ""
     }
 
     var roleSet: Set<String> {

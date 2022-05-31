@@ -7,7 +7,7 @@ import Fluent
 import Vapor
 
 struct MainPage: LeafPage {
-    init(user: User? = nil, site: SiteConfiguration) {
+    init(user: User? = nil, site: VaporBaseSite) {
     }
     
 
