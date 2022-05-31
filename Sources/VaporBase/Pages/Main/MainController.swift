@@ -21,13 +21,13 @@ struct MainController: RouteCollection {
         routes.get(.main, use: withUser(handleGetMain))
     }
 
-    func handleGetHelp(_ req: Request, user: User) -> EventLoopFuture<Response> {
-        return req.render(HelpPage(), user: user)
+    func handleGetHelp(_ req: Request, user: User) async throws -> Response {
+        return try await req.render(HelpPage(), user: user)
     }
 
-    func handleGetMain(_ req: Request, user: User?) -> EventLoopFuture<Response> {
+    func handleGetMain(_ req: Request, user: User?) async throws -> Response {
         let site = req.application.site
-        return req.render(MainPage(user: user, site: site), user: user)
+        return try await req.render(MainPage(user: user, site: site), user: user)
     }
 }
 
