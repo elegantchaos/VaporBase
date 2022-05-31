@@ -10,95 +10,43 @@ extension PathComponent {
     static let login: PathComponent = "login"
 }
 
-struct LoginRequest: Content {
-    let email: String
-    let password: String
-    
-    func findUser(with request: Request) throws -> EventLoopFuture<User> {
-        let query = User.query(on: request.db).filter(\.$email == email).first()
-        return query.unwrap(or: AuthenticationError.invalidEmailOrPassword)
-    }
-    
-    func verifyUser(_ user: User, request: Request) -> EventLoopFuture<User> {
-        let verifier = request.password.async.verify(password, created: user.passwordHash)
-        return verifier
-            .guard({ $0 == true }, else: AuthenticationError.invalidEmailOrPassword)
-            .transform(to: user)
-    }
-}
-
-extension LoginRequest: Validatable {
-    static func decode(from req: Request) throws -> LoginRequest {
-        try LoginRequest.validate(content: req)
-        return try req.content.decode(LoginRequest.self)
-    }
-    
-    static func validations(_ validations: inout Validations) {
-        validations.add("email", as: String.self, is: .email)
-    }
-}
-
 struct LoginController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        routes.get(.login, use: renderLogin)
+        routes.get(.login, use: handleGetLogin)
         if let app = routes as? Application {
             let sessionEnabled = routes.grouped(
                 SessionsMiddleware(session: app.sessions.driver)
             )
-            sessionEnabled.post(.login, use: handleLogin)
+            sessionEnabled.post(.login, use: handlePostLogin)
         }
     }
     
-    func renderLogin(_ req: Request) throws -> EventLoopFuture<Response> {
+    func handleGetLogin(_ req: Request) async throws -> Response {
         let page = LoginPage()
-        return req.render(page)
+        return try await req.render(page)
     }
     
-    func handleLogin(_ req: Request) throws -> EventLoopFuture<Response> {
-        let login = try LoginRequest.decode(from: req)
+    func handlePostLogin(_ req: Request) async throws -> Response {
         do {
-            return try login.findUser(with: req)
-                .thenVerifyLogin(login, with: req)
-                .thenRemoveTokens(with: req)
-                .thenGenerateToken(with: req)
-                .thenRedirect(with: req, to: .main)
-                .flatMapError { e in
-                    return req.render(LoginPage(request: login), error: e)
-                }
+            let login = try LoginRequest.decode(from: req)
+            let user = try await login.findUser(with: req)
+            
+            do {
+                let verified = try await login.verifyUser(user, request: req)
+                let tokens = try req.tokens.forUser(verified)
+                try await tokens.delete()
+                
+                let newToken = try user.generateToken()
+                try await newToken.create(on: req.db)
+                req.session.authenticate(newToken)
+                return req.redirect(to: .main)
+            } catch {
+                return try await req.render(LoginPage(request: login), error: error)
+            }
+
         } catch {
-            return req.render(LoginPage())
+            return try await req.render(LoginPage())
         }
+        
     }
 }
-
-fileprivate extension EventLoopFuture where Value: User {
-    func thenVerifyLogin(_ login: LoginRequest, with req: Request) -> EventLoopFuture<User> {
-        flatMap { user in login.verifyUser(user, request: req) }
-    }
-    
-    func thenRemoveTokens(with req: Request) -> EventLoopFuture<User> {
-        flatMap { user in
-            do {
-                return try req.tokens.forUser(user)
-                    .delete()
-                    .transform(to: user)
-            } catch {
-                return req.eventLoop.makeFailedFuture(error)
-            }
-        }
-    }
-    
-    func thenGenerateToken(with req: Request) -> EventLoopFuture<Void> {
-        flatMap { user in
-            do {
-                let token = try user.generateToken()
-                return token
-                    .create(on: req.db)
-                    .map { req.session.authenticate(token) }
-            } catch {
-                return req.eventLoop.makeFailedFuture(error)
-            }
-        }
-    }
-}
-

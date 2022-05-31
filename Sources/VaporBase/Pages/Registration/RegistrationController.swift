@@ -18,18 +18,21 @@ struct RegistrationController: RouteCollection {
         routes.post(.register, use: handlePostRegister)
     }
     
-    func handleGetRegister(req: Request) throws -> EventLoopFuture<Response> {
-        return req.render(RegisterPage())
+    func handleGetRegister(req: Request) async throws -> Response {
+        return try await req.render(RegisterPage())
     }
     
-    func handlePostRegister(_ req: Request) throws -> EventLoopFuture<Response> {
+    func handlePostRegister(_ req: Request) async throws -> Response {
         let form = try RegisterPage.FormData(from: req)
+        let hash = try await form.hash(with: req)
+        let user = User(name: form.name, email: form.email, passwordHash: hash)
+        do {
+            try await user.create(on: req.db)
+        } catch let error as DatabaseError where error.isConstraintFailure  {
+            throw AuthenticationError.emailAlreadyExists
+        }
         
-        return form.hash(with: req)
-            .withNewUser(using: form, with: req)
-            .create(on: req.db)
-            .translatingError(to: AuthenticationError.emailAlreadyExists, if: { (error: DatabaseError) in error.isConstraintFailure })
-            .redirect(with: req, to: .login)
+        return req.redirect(to: .login)
     }
     
 }

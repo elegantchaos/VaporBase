@@ -15,8 +15,8 @@ struct SplashController: RouteCollection {
         routes.get(.splash, use: withUser(handleGetSplash))
     }
 
-    func handleGetSplash(_ req: Request, user: User?) -> EventLoopFuture<Response> {
-        return req.render(SplashPage(), user: user)
+    func handleGetSplash(_ req: Request, user: User?) async throws -> Response {
+        return try await req.render(SplashPage(), user: user)
     }
 }
 

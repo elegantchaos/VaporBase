@@ -1,27 +1,42 @@
 
 # VaporBase
 
-This is a base Vapor setup, which handles basic login/logout and user profile management.
+This is intended to form the bases of a Vapor website, using Postgres as the database.
 
-It has no content model of its own - that should be added by the client package.
+It defines and handles two model types: `User`, and `Token`.
 
-It's very simple at the moment, with a minimal UI.
+It supplies pages to handle:
 
+- registering
+- logging in
+- display a basic profile page for the logged in user
+- updating a user's name/password
+- displaying an admin page
+- editing user's information as an admin
+
+Some default `.leaf` files are supplied with a simple user interface for this.
+
+It is expected that a client of this library will:
+
+- define more Model classes, pages, leaf file and controllers for the actual website content
+- replace some or all of the default `.leaf` files
+
+A test project which uses this package as a client [can be found here](https://github.com/elegantchaos/VaporBaseTest).
 
 ## Local Testing
 
-### Install Postgres
+To test locally, you need to install postgres (`brew install postgresql`).
 
-Install with `brew install postgresql`
+By default the framework expects a database called "vaporbasetest", a user "vapor", with a password "vapor", running on "localhost" (these details can be changed when setting up a custom site).
 
-(Migrate database with `brew postgresql-upgrade-database`)
+You can use `psql postgres`, to create the role and database:
 
-### Create Database 
+```
+CREATE ROLE vapor WITH LOGIN PASSWORD 'vapor';
+ALTER ROLE vapor CREATEDB;
+CREATE DATABASE vaporbasetest;
+```
 
-Setup database:
+If you later need to migrate a database after upgrading postgres, you can do it with `brew postgresql-upgrade-database`.
+ 
 
-> psql postgres
-
-> CREATE ROLE vapor WITH LOGIN PASSWORD 'vapor';
-> ALTER ROLE vapor CREATEDB;
-> CREATE DATABASE vaporbasetest;
