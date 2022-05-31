@@ -103,7 +103,9 @@ public extension Application {
     func openLocally() {
         #if canImport(AppKit)
         let configuration = http.server.configuration
-        NSWorkspace.shared.open(URL(string: "http://\(configuration.hostname):\(configuration.port)/")!)
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now().advanced(by: .seconds(1))) {
+            NSWorkspace.shared.open(URL(string: "http://\(configuration.hostname):\(configuration.port)/")!)
+        }
         #endif
     }
 }
