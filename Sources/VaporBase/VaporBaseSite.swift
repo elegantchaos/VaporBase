@@ -10,11 +10,28 @@ import LeafKit
 import AppKit
 #endif
 
+
 open class VaporBaseSite {
-    open var name: String { fatalError("subclass should override this ") }
-    open var database: String { fatalError("subclass should override this ") }
+    public struct Database {
+        public let host: String
+        public let name: String
+        public let user: String
+        public let password: String
+
+        public init(host: String = "localhost", name: String = "vaporbase", user: String = "vapor", password: String = "vapor") {
+            self.host = host
+            self.name = name
+            self.user = user
+            self.password = password
+        }
+    }
+
+    public let name: String
+    public let database: Database
     
-    public init() {
+    public init(name: String, database: Database) {
+        self.name = name
+        self.database = database
     }
     
     /// Setup and run the server.
@@ -72,7 +89,7 @@ open class VaporBaseSite {
                 configuration: postgresConfig
             ), as: .psql)
         } else {
-            app.databases.use(.postgres(hostname: "localhost", username: "vapor", password: "vapor", database: database), as: .psql)
+            app.databases.use(.postgres(hostname: database.host, username: database.user, password: database.password, database: database.name), as: .psql)
         }
     }
     

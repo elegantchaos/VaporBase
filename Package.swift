@@ -7,10 +7,6 @@ let package = Package(
         .macOS(.v12)
     ],
     products: [
-        .executable(
-            name: "vb",
-            targets: ["Run"]
-        ),
         .library(
             name: "VaporBase",
             targets: ["VaporBase"]
@@ -18,7 +14,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/elegantchaos/Coercion", from: "1.0.0"),
-        .package(url: "https://github.com/elegantchaos/Runner", from: "1.0.0"),
+//        .package(url: "https://github.com/elegantchaos/Runner", from: "1.0.0"),
         
         // 💧 Vapor.
         .package(url: "https://github.com/vapor/vapor.git", from: "4.60.3"),
@@ -35,15 +31,12 @@ let package = Package(
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
                 .product(name: "Leaf", package: "leaf"),
                 .product(name: "Vapor", package: "vapor"),
-                .product(name: "Runner", package: "Runner")
+//                .product(name: "Runner", package: "Runner")
             ],
             resources: [
                 .copy("Resources/Views")
             ]
         ),
-        .executableTarget(name: "Run", dependencies: [
-            .target(name: "VaporBase"),
-        ]),
         .testTarget(name: "AppTests", dependencies: [
             .target(name: "VaporBase"),
             .product(name: "XCTVapor", package: "vapor"),
