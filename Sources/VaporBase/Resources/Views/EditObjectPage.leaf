@@ -1,0 +1,58 @@
+#extend("basic"):
+#export("body"):
+<h3 class="card-title">#(meta.title)</h3>
+
+#if(isAdmin):
+
+<form action="/edit-object/#(page.session.id)" method="POST">
+    #for(group in page.session.groups):
+        <div class="form-group">
+        <h3>#(group.title)</h3>
+            #for(property in group.properties):
+                <ul class="edit-property">
+                    <li><label for="#(property.path)">#(property.title)</label></li>
+                    <li><input type="submit" value="[+]" formaction="/edit-object-add-variation/#(page.session.id)/#(property.path)" /></li>
+                </ul>
+                
+                #if(property.kind == "text"):
+                     #for(value in property.values):
+                         <textarea
+                         id="#(property.path).#(index)"
+                         name="#(property.path).#(index)"
+                         rows="5"
+                         cols="80"
+                         class="form-control"
+                         autofocus
+                         >#(value)</textarea>
+                     #endfor
+                #elseif(property.kind == "strings"):
+                     #for(value in property.values):
+                        <input
+                         id="#(property.path).#(index)"
+                         name="#(property.path).#(index)"
+                         type="text"
+                         class="form-control"
+                         value="#(value)"
+                         />
+                     #endfor
+                #endif
+            #endfor
+        </div>
+    #endfor
+    
+    <div class="form-group">
+        <input type="submit" class="btn btn-block btn-primary" value="Update" />
+    </div>
+
+</form>
+        
+<br />
+
+<h4>Actions</h4>
+<div><a href="/create-object">New Object</a></div>
+        
+#endif
+
+#endexport
+#endextend
+        

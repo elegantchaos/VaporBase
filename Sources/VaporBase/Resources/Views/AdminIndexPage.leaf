@@ -1,0 +1,22 @@
+#extend("basic"):
+    #export("body"):
+                <h3 class="card-title">#(meta.title)</h3>
+
+                #if(isAdmin):
+
+                    <h4>Users</h4>
+                    #for(user in page.users):
+                       <li><a href="/admin-user/#(user.id)">#(user.name) - #(user.email)</a></li>
+                    #endfor
+
+                    <br />
+
+                    <h4>Actions</h4>
+                    <div><a href="/admin">Overview</a></div>
+                    <div><a href="/admin-tokens">All Tokens</a></div>
+                    <div><a href="/admin-sessions">All Sessions</a></div>
+
+                #endif
+    #endexport
+#endextend
+

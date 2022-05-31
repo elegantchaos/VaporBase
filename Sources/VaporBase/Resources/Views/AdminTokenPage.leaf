@@ -1,0 +1,20 @@
+#extend("basic"):
+    #export("body"):
+                <h3 class="card-title">#(meta.title)</h3>
+
+                #if(isAdmin):
+
+                <h4>Tokens</h4>
+                #for(token in page.tokens):
+                   <li>#(token.id) (#(token.user.name))</li>
+                #endfor
+
+                <br />
+
+                <h4>Actions</h4>
+                <div><a href="/admin">Back to Overview</a></div>
+
+                #endif
+    #endexport
+#endextend
+

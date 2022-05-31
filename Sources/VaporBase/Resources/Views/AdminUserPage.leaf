@@ -1,0 +1,59 @@
+#extend("basic"):
+#export("body"):
+
+<h3 class="card-title">#(meta.title)</h3>
+
+<form action="/admin-user/#(page.user.id)" method="POST">
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="name" name="name" class="form-control" id="name" value="#(page.user.name)" />
+    </div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" name="email" class="form-control" id="email" value="#(page.user.email)"/>
+    </div>
+
+    <div class="form-group">
+        <label for="roles">Roles</label>
+        <input type="roles" name="roles" class="form-control" id="roles" value="#(page.user.roles)" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Change Password</label>
+        <input type="password" name="password" class="form-control" id="password" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Confirm Password</label>
+        <input type="password" name="confirm" class="form-control" id="confirm" />
+    </div>
+
+    <div class="form-group">
+        <input type="submit" class="btn btn-block btn-primary" value="Update" />
+    </div>
+
+</form>
+
+<br />
+<h4>Current Session</h4>
+   <li>
+    #for(line in page.current):
+        #(line)
+    #endfor
+   </li>
+
+<br />
+<h4>Previous Sessions</h4>
+#for(transcript in page.transcripts):
+   <li>#(transcript.value)</li>
+#endfor
+
+<br />
+<h4>Actions</h4>
+<div><a href="/admin">Overview</a></div>
+<div><a href="/admin-tokens">All Tokens</a></div>
+<div><a href="/admin-sessions">All Sessions</a></div>
+
+#endexport
+#endextend
+

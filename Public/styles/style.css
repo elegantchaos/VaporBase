@@ -1,0 +1,33 @@
+/** {*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*}*/
+/**/
+/*body {*/
+/*    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Helvetica", "Segoe UI", Roboto, Ubuntu;*/
+/*    font-size: 16px;*/
+/*    line-height: 1.4em;*/
+/*    background: #(meta.background);*/
+/*}*/
+/**/
+/*h1 {*/
+/*    padding: #(meta.padding);*/
+/*}*/
+/**/
+/*@media (max-width: 599px) {}*/
+/*@media (min-width: 600px) {}*/
+/*@media (min-width: 900px) {}*/
+/*@media (min-width: 1200px) {}*/
+/*@media (min-width: 1800px) {}*/
+
+div.line.rawInput p {
+    display: none;
+}
+
+div.line.input {
+    font-weight: bold;
+}
+
+div.line.input p:before {
+    content: "\2192  "
+}

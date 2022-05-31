@@ -1,0 +1,19 @@
+#extend("basic"):
+#export("body"):
+
+#if(user == nil):
+<div>Welcome to Site.</div>
+
+<br/>
+
+<div>You need to first <a href="/register">register</a> or <a href="/login">log in</a>.</div>
+
+#else:
+
+<div>Main content goes here</div>
+
+#endif
+
+#endexport
+#endextend
+

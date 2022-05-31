@@ -1,0 +1,22 @@
+#extend("basic"):
+#export("body"):
+
+<div class="manual">
+
+<p>
+Site help here.
+</p>
+</div>
+
+<a href="/">Back…</a>
+
+<br>
+<br>
+<div class="text-muted">
+<div>Having problems logging in? Need to reset your password?</div>
+<div>Drop us <a href="mailto:support@site.com.uk?subject=Site%20Support">an email</a> and we will try to help.</div>
+</div>
+
+#endexport
+#endextend
+

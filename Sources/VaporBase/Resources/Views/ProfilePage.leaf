@@ -1,0 +1,42 @@
+#extend("basic"):
+#export("body"):
+<h3 class="card-title">#(meta.title)</h3>
+
+<form action="/settings" method="POST">
+<div class="form-group">
+<label for="email">Name</label>
+<input type="name" name="name" class="form-control" id="name" value="#(user.name)" autofocus />
+</div>
+
+<div class="form-group">
+<label for="email">Email</label>
+<input type="email" name="email" class="form-control" id="email" value="#(user.email)"/>
+</div>
+
+<div class="form-group">
+<label for="password">Change Password</label>
+<input type="password" name="password" class="form-control" id="password" />
+</div>
+
+<div class="form-group">
+<label for="password">Confirm Password</label>
+<input type="password" name="confirm" class="form-control" id="confirm" />
+</div>
+
+<div class="form-group">
+<input type="submit" class="btn btn-block btn-primary" value="Update" />
+</div>
+</form>
+
+
+<h4>Actions</h4>
+#if(isAdmin):
+<div><a href="/admin">Admin</a></div>
+#endif
+
+<div><a href="/reset">Reset Site</a></div>
+<div><a href="/logout">Logout</a></div>
+</div>
+#endexport
+#endextend
+
