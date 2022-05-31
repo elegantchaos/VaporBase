@@ -12,21 +12,21 @@ extension PathComponent {
 
 struct LoginController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        routes.get(.login, use: renderLogin)
+        routes.get(.login, use: handleGetLogin)
         if let app = routes as? Application {
             let sessionEnabled = routes.grouped(
                 SessionsMiddleware(session: app.sessions.driver)
             )
-            sessionEnabled.post(.login, use: handleLogin)
+            sessionEnabled.post(.login, use: handlePostLogin)
         }
     }
     
-    func renderLogin(_ req: Request) async throws -> Response {
+    func handleGetLogin(_ req: Request) async throws -> Response {
         let page = LoginPage()
         return try await req.render(page)
     }
     
-    func handleLogin(_ req: Request) async throws -> Response {
+    func handlePostLogin(_ req: Request) async throws -> Response {
         do {
             let login = try LoginRequest.decode(from: req)
             let user = try await login.findUser(with: req)

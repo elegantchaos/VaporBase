@@ -2,7 +2,7 @@
 #export("body"):
 <h3 class="card-title">#(meta.title)</h3>
 
-<form action="/settings" method="POST">
+<form action="/profile" method="POST">
 <div class="form-group">
 <label for="email">Name</label>
 <input type="name" name="name" class="form-control" id="name" value="#(user.name)" autofocus />

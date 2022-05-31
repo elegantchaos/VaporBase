@@ -7,18 +7,18 @@ import Fluent
 import Vapor
 
 extension PathComponent {
-    static let settings: PathComponent = "settings"
+    static let profile: PathComponent = "profile"
     static let logout: PathComponent = "logout"
 }
 
 struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        routes.get(.settings, use: requireUser(renderProfilePage))
-        routes.post(.settings, use: requireUser(handleUpdateSettings))
-        routes.get(.logout, use: handleLogout)
+        routes.get(.profile, use: requireUser(handleGetProfile))
+        routes.post(.profile, use: requireUser(handlePostProfile))
+        routes.get(.logout, use: handleGetLogout)
     }
     
-    func handleUpdateSettings(_ req: Request, for user: User) async throws -> Response {
+    func handlePostProfile(_ req: Request, for user: User) async throws -> Response {
         let formData = try ProfilePage.FormData(from: req)
         user.name = formData.name
         user.email = formData.email
@@ -30,13 +30,13 @@ struct UserController: RouteCollection {
         return req.redirect(to: .main)
     }
 
-    func handleLogout(_ req: Request) throws -> Response {
+    func handleGetLogout(_ req: Request) throws -> Response {
         req.auth.logout(User.self)
         req.session.destroy()
         return req.redirect(to: .login)
     }
 
-    func renderProfilePage(_ req: Request, for user: User) async throws -> Response {
+    func handleGetProfile(_ req: Request, for user: User) async throws -> Response {
         let users = try await req.users.all()
 
         if (users.count == 1) && !user.isAdmin {
