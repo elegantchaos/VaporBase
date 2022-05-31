@@ -6,36 +6,49 @@
 import Vapor
 
 extension RouteCollection {
-    func withUser(req: Request, perform: @escaping (Request, User?) -> EventLoopFuture<Response>) throws -> EventLoopFuture<Response> {
+    func withUser(req: Request, perform: @escaping (Request, User?) async -> Response) async throws -> Response {
         let token = req.auth.get(Token.self)
+        let user: User?
         if let token = token {
-            return token.$user.get(on: req.db)
-                .flatMap { user in perform(req, user) }
+            user = try await token.$user.get(on: req.db)
         } else {
-            return perform(req, nil)
+            user = nil
         }
+
+        return await perform(req, user)
     }
     
-    func withUser(_ perform: @escaping (Request, User?) -> EventLoopFuture<Response>) -> (Request) throws -> EventLoopFuture<Response> {
+    func withUser(_ perform: @escaping (Request, User?) async -> Response) -> (Request) async throws -> Response {
         return { req in
-            try withUser(req: req, perform: perform)
+            try await withUser(req: req, perform: perform)
         }
     }
 
-    func requireUser(req: Request, perform: @escaping (Request, User) throws -> EventLoopFuture<Response>) throws -> EventLoopFuture<Response> {
+    func requireUser(req: Request, perform: @escaping (Request, User) async throws -> Response) async throws -> Response {
         let token = req.auth.get(Token.self)
         if let token = token {
-            return token.$user.get(on: req.db)
-                .flatMapThrowing { user in try perform(req, user) }
-                .flatMap { future in future }
+            let user = try await token.$user.get(on: req.db)
+            return try await perform(req, user)
         } else {
-            return req.eventLoop.makeSucceededFuture(req.redirect(to: .login))
+            return req.redirect(to: .login)
         }
     }
     
-    func requireUser(_ perform: @escaping (Request, User) throws -> EventLoopFuture<Response>) -> (Request) throws -> EventLoopFuture<Response> {
+    func requireUser(_ perform: @escaping (Request, User) async throws -> Response) -> (Request) async throws -> Response {
         return { req in
-            try requireUser(req: req, perform: perform)
+            try await requireUser(req: req, perform: perform)
+        }
+    }
+
+    func requireAdmin(_ perform: @escaping (Request, User) async throws -> Response) -> (Request) async throws -> Response {
+        return { req in
+            try await requireUser(req: req) { req, user in
+                guard user.isAdmin else {
+                    throw AdminError.notAdmin
+                }
+                
+                return try await perform(req, user)
+            }
         }
     }
 

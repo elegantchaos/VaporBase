@@ -43,8 +43,8 @@ struct RenderContext<Page>: Codable where Page: LeafPage {
 }
 
 extension Request {
-    func render<T>(_ page: T, user: User? = nil, error: Error? = nil) -> EventLoopFuture<Response> where T: LeafPage {
+    func render<T>(_ page: T, user: User? = nil, error: Error? = nil) async throws -> Response where T: LeafPage {
         let context = RenderContext(page: page, user: user, error: error?.localizedDescription, site: application.site)
-        return view.render(context.file, context).encodeResponse(for: self)
+        return try await view.render(context.file, context).encodeResponse(for: self)
     }
 }

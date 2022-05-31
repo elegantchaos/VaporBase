@@ -7,13 +7,13 @@ import Vapor
 import Fluent
 
 protocol UserRepository {
-    func all() -> EventLoopFuture<[User]>
+    func all() async throws -> [User]
 }
 
 struct DatabaseUserRepository: UserRepository {
     let database: Database
-    func all() -> EventLoopFuture<[User]> {
-        return User.query(on: database).all()
+    func all() async throws -> [User] {
+        return try await User.query(on: database).all()
     }
 }
 
