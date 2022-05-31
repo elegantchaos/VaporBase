@@ -19,8 +19,8 @@ struct RegisterPage: LeafPage {
         let password: String
         let confirm: String
         
-        func hash(with req: Request) -> EventLoopFuture<String> {
-            return req.password.async.hash(password)
+        func hash(with req: Request) async throws -> String {
+            return try await req.password.async.hash(password)
         }
         
         init(from req: Request) throws {

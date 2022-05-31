@@ -10,7 +10,8 @@ struct LoginRequest: Content {
     let password: String
     
     func findUser(with request: Request) async throws -> User {
-        guard let user = try await User.query(on: request.db).filter(\.$email == email).first() else {
+        let users = try await User.query(on: request.db).all()
+        guard let user = users.first(where: { $0.email == email }) else { // TODO: use query.filter here
             throw AuthenticationError.invalidEmailOrPassword
         }
         
