@@ -18,7 +18,7 @@ struct LoginRequest: Content {
         return user
     }
     
-    func verifyUser(_ user: User, request: Request) async throws -> User {
+    func authenticateUser(_ user: User, request: Request) async throws -> User {
         guard try await request.password.async.verify(password, created: user.passwordHash).get() else {
             throw AuthenticationError.invalidEmailOrPassword
         }

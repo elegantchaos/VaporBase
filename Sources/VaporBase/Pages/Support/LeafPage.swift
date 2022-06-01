@@ -14,15 +14,16 @@ protocol LeafPage: Codable {
 extension LeafPage {
 }
 
-struct Site: Codable {
+struct SiteMetadata: Codable {
     let title: String
+    let email: String
 }
 
 struct RenderContext<Page>: Codable where Page: LeafPage {
     internal init(page: Page, user: User?, error: String?, site: VaporBaseSite) {
         let file = String(describing: Page.self)
 
-        self.site = Site(title: site.name)
+        self.site = SiteMetadata(title: site.name, email: site.email)
         self.meta = page.meta(for: user)
         self.file = file
         self.page = page
@@ -32,7 +33,7 @@ struct RenderContext<Page>: Codable where Page: LeafPage {
         self.isPublished = isSitePublished
     }
     
-    let site: Site
+    let site: SiteMetadata
     let meta: PageMetadata
     let file: String
     let page: Page

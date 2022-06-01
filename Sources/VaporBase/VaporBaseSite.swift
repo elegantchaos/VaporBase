@@ -28,10 +28,12 @@ open class VaporBaseSite {
     }
 
     public let name: String
+    public let email: String
     public let database: Database
     
-    public init(name: String, database: Database) {
+    public init(name: String, email: String, database: Database) {
         self.name = name
+        self.email = email
         self.database = database
     }
     
@@ -175,7 +177,6 @@ open class VaporBaseSite {
         try protectedRoutes.register(collection: UserController())
         try protectedRoutes.register(collection: MainController())
         try protectedRoutes.register(collection: AdminController())
-        try app.register(collection: RegistrationController())
     }
     
     open func setupMigrations(_ app: Application) {

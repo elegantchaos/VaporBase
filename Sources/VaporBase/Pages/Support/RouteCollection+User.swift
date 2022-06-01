@@ -30,21 +30,26 @@ extension RouteCollection {
 
     /// Extract the authorised user, then perform some code.
     /// The user is required, and we throw an error if the session is not authorised.
-    func performRequiringUser(req: Request, code: @escaping (Request, User) async throws -> Response) async throws -> Response {
+    func performRequiringUser(req: Request, requireVerified: Bool, code: @escaping (Request, User) async throws -> Response) async throws -> Response {
         let token = req.auth.get(Token.self)
-        if let token = token {
-            let user = try await token.$user.get(on: req.db)
-            return try await code(req, user)
-        } else {
+        guard let token = token else {
             return req.redirect(to: .login)
         }
+
+        let user = try await token.$user.get(on: req.db)
+        
+        guard !requireVerified || user.emailIsVerified else {
+            return req.redirect(to: .verify)
+        }
+
+        return try await code(req, user)
     }
     
     /// Return a closure that extracts the authorised user, then perform some code.
     /// The user is required, and we throw an error if the session is not authorised.
-    func requireUser(_ perform: @escaping (Request, User) async throws -> Response) -> (Request) async throws -> Response {
+    func requireUser(requireVerified: Bool = true, _ perform: @escaping (Request, User) async throws -> Response) -> (Request) async throws -> Response {
         return { req in
-            try await performRequiringUser(req: req, code: perform)
+            try await performRequiringUser(req: req, requireVerified: requireVerified, code: perform)
         }
     }
 
@@ -52,7 +57,7 @@ extension RouteCollection {
     /// The user is required to be an admin, and we throw an error if the session is not authorised, or the user is non-admin.
     func requireAdmin(_ perform: @escaping (Request, User) async throws -> Response) -> (Request) async throws -> Response {
         return { req in
-            try await performRequiringUser(req: req) { req, user in
+            try await performRequiringUser(req: req, requireVerified: true) { req, user in
                 guard user.isAdmin else {
                     throw AdminError.notAdmin
                 }

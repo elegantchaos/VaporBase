@@ -9,7 +9,7 @@ struct PageMetadata: Codable {
     let background: String
     let padding: Int
     var error: String?
-    
+
     init(_ title: String, description: String = "", error: String? = nil) {
         self.background = "ff0000"
         self.padding = 10

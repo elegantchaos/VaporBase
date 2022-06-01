@@ -1,0 +1,27 @@
+#extend("basic"):
+#export("body"):
+
+<h3 class="panel-title">#(meta.title)</h3>
+
+<div><p>#(page.message)</p></div>
+
+<form action="/verify" method="POST">
+    <div class="form-group">
+        <label for="code">Verification Code</label>
+        <input type="code" name="code" class="form-control" id="code" value="" />
+    </div>
+    <div class="form-group">
+        <input type="submit" class="btn btn-block btn-success" value="Verify" />
+    </div>
+</form>
+
+</br>
+</br>
+
+<div class="text-muted">
+<div>Having problems?</div>
+<div>Drop us <a href="mailto:#(site.email)?subject=#(site.name)%20Support">an email</a> and we will try to help.</div>
+</div>
+
+#endexport
+#endextend

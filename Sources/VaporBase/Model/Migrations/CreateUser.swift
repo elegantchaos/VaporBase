@@ -16,7 +16,8 @@ extension User {
                 .field(.name, .string, .required)
                 .field(.email, .string, .required)
                 .field(.passwordHash, .string, .required)
-                .field(.roles, .string, .sql(defaultValue))
+                .field(.roles, .string, .required)
+                .field(.verification, .string, .required)
                 .unique(on: .email)
                 .create()
 
