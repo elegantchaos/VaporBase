@@ -5,6 +5,7 @@ import FluentPostgresDriver
 import Vapor
 import Leaf
 import LeafKit
+import Mailgun
 
 #if canImport(AppKit)
 import AppKit
@@ -122,7 +123,30 @@ open class VaporBaseSite {
     }
     
     public func setupDefaultMiddleware(_ app: Application) {
-        app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))     // serve files from /Public folder
+        // serve files from /Public folder
+        app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+
+        // setup mailgun
+        let environmentKey = Environment.get("MAILGUN_API_KEY")
+
+        let key: String?
+        #if DEBUG
+            // look for a local key file in the working directory
+            // NB: this file is for local testing only, and should not be committed to source control
+            let url = URL(fileURLWithPath: ".mailgun")
+        let localKey = try? String(contentsOf: url, encoding: .utf8).trimmingCharacters(in:.whitespacesAndNewlines)
+            key = localKey ?? environmentKey
+        #else
+            key = environmentKey
+        #endif
+
+        guard let key = key else {
+            fatalError("Mailgun key not found.")
+        }
+
+        app.mailgun.configuration = .init(apiKey: key)
+        app.mailgun.defaultDomain = .elegantchaos
+
     }
     
     open func registerRepositories(_ app: Application) {
@@ -203,4 +227,8 @@ extension Application {
             self.storage[SiteKey.self] = newValue
         }
     }
+}
+
+extension MailgunDomain {
+    static var elegantchaos: MailgunDomain { .init("mailgun.elegantchaos.com", .us) }
 }
