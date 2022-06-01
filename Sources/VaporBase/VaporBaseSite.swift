@@ -115,7 +115,7 @@ open class VaporBaseSite {
     
     public func setupDefaultSources(_ app: Application, sources: LeafSources) throws {
         let path = Bundle.module.url(forResource: "Views", withExtension: nil)!.path
-        print("VaporBase built-in views path is: \(path)")
+        app.logger.debug("VaporBase built-in views path is: \(path)")
         let source = NIOLeafFiles(fileio: app.fileio,
                                   limits: [.toSandbox, .requireExtensions], // Heroku bundle files are inside `.swift-bin`, which can be mistaken for being invisible
                                   sandboxDirectory: path,

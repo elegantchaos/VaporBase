@@ -33,8 +33,10 @@ struct LoginController: RouteCollection {
         let hash = try await form.hash(with: req)
         let user = User(name: form.name, email: form.email, passwordHash: hash)
         let users = try await req.users.all()
+
         if users.count == 0 {
             user.addRole(.adminRole)
+            req.logger.debug("First user promoted to admin.")
         }
 
         do {
@@ -42,13 +44,6 @@ struct LoginController: RouteCollection {
         } catch let error as DatabaseError where error.isConstraintFailure  {
             throw AuthenticationError.emailAlreadyExists
         }
-        
-        //        do {
-        //            let message = verificationMessage(for: form.name, email: form.email)
-        //            let response = try await req.mailgun().send(message).get()
-        //        } catch {
-        //            print("Error sending verification email \(error).")
-        //        }
         
         return req.redirect(to: .login)
     }

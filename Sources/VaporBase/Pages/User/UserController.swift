@@ -95,9 +95,10 @@ struct UserController: RouteCollection {
         )
         
         do {
-            _ = try await req.mailgun().send(message).get()
+            let response = try await req.mailgun().send(message).get()
+            print(response.status.code)
         } catch {
-            print("Error sending verification email")
+            req.logger.warning("Error throw sending verification email to \(user.email).")
         }
     }
 
