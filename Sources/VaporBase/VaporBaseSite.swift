@@ -76,9 +76,8 @@ open class VaporBaseSite {
     
     private func openLocally(_ app: Application) {
 #if canImport(AppKit)
-        let configuration = app.http.server.configuration
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now().advanced(by: .seconds(1))) {
-            NSWorkspace.shared.open(URL(string: "http://\(configuration.hostname):\(configuration.port)/")!)
+            NSWorkspace.shared.open(app.httpURL)
         }
 #endif
     }
@@ -218,7 +217,7 @@ struct SiteKey: StorageKey {
 }
 
 
-extension Application {
+public extension Application {
     var site: VaporBaseSite {
         get {
             self.storage[SiteKey.self]!
@@ -227,6 +226,24 @@ extension Application {
         set {
             self.storage[SiteKey.self] = newValue
         }
+    }
+    
+    var httpAddress: String {
+        let configuration = http.server.configuration
+        var address = "https://\(configuration.hostname)"
+        if configuration.port != 443 {
+            address += ":\(configuration.port)"
+        }
+        
+        return address
+    }
+    
+    var httpURL: URL {
+        return URL(string: httpAddress)!
+    }
+    
+    var httpShort: String {
+        return http.server.configuration.hostname
     }
 }
 

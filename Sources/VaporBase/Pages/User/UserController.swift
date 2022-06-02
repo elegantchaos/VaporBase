@@ -45,13 +45,12 @@ struct UserController: RouteCollection {
         
         if user.verification.isEmpty {
             // generate a new code and send a verification email
-            let code = UUID().uuidString
-            user.verification = code
+            user.verification = generateCode()
             try await user.save(on: req.db)
             await sendVerificationMessage(req, user: user)
         }
         
-        let message = "A verification code was sent to \(user.email). Please enter the code below."
+        let message = "A verification code was sent to \(user.email). Please enter the code below to confirm that you own that email address."
         return try await req.render(VerifyPage(message: message))
     }
     
@@ -78,12 +77,18 @@ struct UserController: RouteCollection {
     }
 
     func sendVerificationMessage(_ req: Request, user: User) async {
-        let configuration = req.application.http.server.configuration
-        let link = "https://\(configuration.hostname):\(configuration.port)/verified?\(user.verification)"
-        let text = "Please verify your email address, by clicking on this link:\n\n.\(link)"
+        let application = req.application
+        let link = "\(application.httpAddress)/verified?\(user.verification)"
+        let text = """
+            Please verify your email address, by clicking on this link:\n\n.\(link)
+            
+            Alternatively, return to \(application.httpAddress) and enter the code \(user.verification).
+        """
+        
         let html = """
             <h1>Please verify your email address.</h1>
-            <p>Please verify your email address, by clicking on <a href="\(link)">this link</a>.</p>"
+            <p>Please verify your email address, by clicking on <a href="\(link)">this link</a>.</p>
+            <p>Alternatively, return to <a href="\(application.httpAddress)">\(application.httpShort)</a> and enter the code <code>\(user.verification)</code>.</p>
         """
         
         let message = MailgunMessage(
@@ -102,4 +107,12 @@ struct UserController: RouteCollection {
         }
     }
 
+    func generateCode(length: Int = 6) -> String {
+        let components = "0123456789ABCDFGHJKLMNPQRTVWXY"
+        var code = ""
+        for _ in 0..<length {
+            code.append(components.randomElement()!)
+        }
+        return code
+    }
 }
