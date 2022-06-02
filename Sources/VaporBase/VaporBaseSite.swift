@@ -77,7 +77,10 @@ open class VaporBaseSite {
     private func openLocally(_ app: Application) {
 #if canImport(AppKit)
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now().advanced(by: .seconds(1))) {
-            NSWorkspace.shared.open(app.httpURL)
+            if var components = URLComponents(string: app.httpAddress) {
+                components.scheme = "http" // for local hosting, just use http
+                NSWorkspace.shared.open(components.url!)
+            }
         }
 #endif
     }
