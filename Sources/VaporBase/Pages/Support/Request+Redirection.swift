@@ -9,8 +9,4 @@ extension Request {
     func redirect(to component: PathComponent) -> Response {
         redirect(to: "/\(component)")
     }
-    
-    func redirectFuture(to component: PathComponent) -> EventLoopFuture<Response> {
-        eventLoop.makeSucceededFuture(redirect(to: component))
-    }
 }

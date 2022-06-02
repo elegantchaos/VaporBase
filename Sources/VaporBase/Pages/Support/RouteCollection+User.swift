@@ -8,7 +8,7 @@ import Vapor
 extension RouteCollection {
     /// Extract the authorised user, then perform some code.
     /// The user passed to the code is optional, and can be nil if the session is not authorised.
-    func performWithUser(req: Request, code: @escaping (Request, User?) async throws -> Response) async throws -> Response {
+    func performWithOptionalUser(req: Request, code: @escaping (Request, User?) async throws -> Response) async throws -> Response {
         let token = req.auth.get(Token.self)
         let user: User?
         if let token = token {
@@ -22,9 +22,9 @@ extension RouteCollection {
 
     /// Return a closure that extracts the authorised user, then perform some code.
     /// The user passed to the code is optional, and can be nil if the session is not authorised.
-    func withUser(_ perform: @escaping (Request, User?) async throws -> Response) -> (Request) async throws -> Response {
+    func optionalUser(_ perform: @escaping (Request, User?) async throws -> Response) -> (Request) async throws -> Response {
         return { req in
-            try await performWithUser(req: req, code: perform)
+            try await performWithOptionalUser(req: req, code: perform)
         }
     }
 

@@ -18,7 +18,7 @@ extension PathComponent {
 struct MainController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.get(.help, use: requireUser(handleGetHelp))
-        routes.get(.main, use: withUser(handleGetMain))
+        routes.get(.main, use: optionalUser(handleGetMain))
     }
 
     func handleGetHelp(_ req: Request, user: User) async throws -> Response {
