@@ -38,7 +38,7 @@ extension RouteCollection {
 
         let user = try await token.$user.get(on: req.db)
         
-        guard !requireVerified || user.emailIsVerified else {
+        guard !requireVerified || user.isEmailVerified else {
             return req.redirect(to: .verify)
         }
 

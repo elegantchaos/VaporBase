@@ -10,7 +10,6 @@ import Vapor
 extension User {
     static var createMigration: Fluent.Migration {
         SimpleMigration("CreateUser", for: self) { schema in
-            let defaultValue = SQLColumnConstraintAlgorithm.default("")
             return schema
                 .id()
                 .field(.name, .string, .required)

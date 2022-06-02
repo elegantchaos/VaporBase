@@ -24,7 +24,7 @@ struct AdminUserPage: LeafPage {
     }
     
     // Sent back by the UserAdminPage form
-    struct FormData: PasswordFormData {
+    struct Form: PasswordFormData {
         let name: String
         let email: String
         let roles: String

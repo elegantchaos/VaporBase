@@ -8,9 +8,10 @@ import Mailgun
 import Vapor
 
 extension PathComponent {
+    static let logout: PathComponent = "logout"
     static let profile: PathComponent = "profile"
     static let verify: PathComponent = "verify"
-    static let logout: PathComponent = "logout"
+    static let verified: PathComponent = "verified"
 }
 
 struct UserController: RouteCollection {
@@ -19,6 +20,7 @@ struct UserController: RouteCollection {
         routes.post(.profile, use: requireUser(handlePostProfile))
         routes.get(.verify, use: requireUser(requireVerified: false, handleGetVerify))
         routes.post(.verify, use: requireUser(requireVerified: false, handlePostVerify))
+        routes.get(.verified, use: requireUser(requireVerified: false, handleGetVerified))
         routes.get(.logout, use: handleGetLogout)
     }
     
@@ -27,7 +29,7 @@ struct UserController: RouteCollection {
     }
     
     func handlePostProfile(_ req: Request, for user: User) async throws -> Response {
-        let formData = try ProfilePage.FormData(from: req)
+        let formData = try ProfilePage.Form(from: req)
         user.name = formData.name
         user.email = formData.email
         if !formData.password.isEmpty, let newHash = try? await req.password.async.hash(formData.password) {
@@ -39,7 +41,7 @@ struct UserController: RouteCollection {
     }
     
     func handleGetVerify(_ req: Request, user: User) async throws -> Response {
-        guard !user.emailIsVerified else {
+        guard !user.isEmailVerified else {
             return req.redirect(to: .main)
         }
         
@@ -53,15 +55,31 @@ struct UserController: RouteCollection {
         let message = "A verification code was sent to \(user.email). Please enter the code below to confirm that you own that email address."
         return try await req.render(VerifyPage(message: message))
     }
-    
+
+    func handleGetVerified(_ req: Request, user: User) async throws -> Response {
+        guard !user.isEmailVerified else {
+            return req.redirect(to: .main)
+        }
+
+        let code = try req.query.decode(String.self)
+        if user.verification == code {
+            user.isEmailVerified = true
+            try await user.save(on: req.db)
+            return req.redirect(to: .main)
+        }
+
+        let message = "The code \(code) didn't match. Please re-enter it."
+        return try await req.render(VerifyPage(message: message))
+    }
+
     func handlePostVerify(_ req: Request, user: User) async throws -> Response {
-        guard !user.emailIsVerified else {
+        guard !user.isEmailVerified else {
             return req.redirect(to: .main)
         }
         
         let form = try VerifyPage.Form(from: req)
         if user.verification == form.code {
-            user.verification = "verified"
+            user.isEmailVerified = true
             try await user.save(on: req.db)
             return req.redirect(to: .main)
         }

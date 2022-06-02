@@ -76,8 +76,9 @@ extension User {
         )
     }
     
-    var emailIsVerified: Bool {
-        verification == "verified"
+    var isEmailVerified: Bool {
+        get { verification == "verified" }
+        set { verification = newValue ? "verified" : "" }
     }
 }
 

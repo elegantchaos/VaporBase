@@ -68,7 +68,7 @@ struct LoginController: RouteCollection {
                 try await newToken.create(on: req.db)
                 req.session.authenticate(newToken)
                 
-                return req.redirect(to: user.emailIsVerified ? .main : .verify)
+                return req.redirect(to: user.isEmailVerified ? .main : .verify)
             } catch {
                 return try await req.render(LoginPage(request: login), error: error)
             }
