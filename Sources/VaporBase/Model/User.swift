@@ -10,6 +10,11 @@ extension FieldKey {
     static var email: FieldKey = "email"
     static var passwordHash: FieldKey = "password_hash"
     static var roles: FieldKey = "roles"
+    static var verification: FieldKey = "verification"
+}
+
+extension String {
+    static var adminRole = "admin"
 }
 
 final class User: Model, Content {
@@ -24,6 +29,9 @@ final class User: Model, Content {
     @Field(key: .email)
     var email: String
 
+    @Field(key: .verification)
+    var verification: String
+
     @Field(key: .passwordHash)
     var passwordHash: String
 
@@ -37,6 +45,8 @@ final class User: Model, Content {
         self.name = name
         self.email = email
         self.passwordHash = passwordHash
+        self.verification = ""
+        self.roles = ""
     }
 
     var roleSet: Set<String> {
@@ -54,18 +64,7 @@ final class User: Model, Content {
     }
     
     var isAdmin: Bool {
-        hasRole("admin") || isBlessedEmail
-    }
-
-    var isEditor: Bool {
-        hasRole("editor") || isAdmin
-    }
-
-    // TODO: remove me after migrating legacy installs
-    var isBlessedEmail: Bool {
-        guard let blessed = Environment.get("BLESSED_EMAIL"), !blessed.isEmpty, !email.isEmpty else { return false }
-        
-        return email == blessed
+        hasRole(.adminRole)
     }
 }
 
@@ -75,6 +74,11 @@ extension User {
             value: [UInt8].random(count: 16).base64,
             userID: self.requireID()
         )
+    }
+    
+    var isEmailVerified: Bool {
+        get { verification == "verified" }
+        set { verification = newValue ? "verified" : "" }
     }
 }
 

@@ -7,8 +7,6 @@ final class AppTests: XCTestCase {
         let site = SiteConfiguration(name: "Test", database: "vaporbasetest")
         defer { app.shutdown() }
         
-        print(FileManager.default.currentDirectoryPath)
-
         try configure(app, site: site)
 
         try app.test(.GET, "/") { res in

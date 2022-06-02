@@ -7,11 +7,14 @@ import Fluent
 import Vapor
 
 extension PathComponent {
+    static let register: PathComponent = "register"
     static let login: PathComponent = "login"
 }
 
 struct LoginController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
+        routes.get(.register, use: handleGetRegister)
+        routes.post(.register, use: handlePostRegister)
         routes.get(.login, use: handleGetLogin)
         if let app = routes as? Application {
             let sessionEnabled = routes.grouped(
@@ -20,6 +23,31 @@ struct LoginController: RouteCollection {
             sessionEnabled.post(.login, use: handlePostLogin)
         }
     }
+    
+    func handleGetRegister(req: Request) async throws -> Response {
+        return try await req.render(RegisterPage())
+    }
+    
+    func handlePostRegister(_ req: Request) async throws -> Response {
+        let form = try RegisterPage.Form(from: req)
+        let hash = try await form.hash(with: req)
+        let user = User(name: form.name, email: form.email, passwordHash: hash)
+        let users = try await req.users.all()
+
+        if users.count == 0 {
+            user.addRole(.adminRole)
+            req.logger.debug("First user promoted to admin.")
+        }
+
+        do {
+            try await user.create(on: req.db)
+        } catch let error as DatabaseError where error.isConstraintFailure  {
+            throw AuthenticationError.emailAlreadyExists
+        }
+        
+        return req.redirect(to: .login)
+    }
+    
     
     func handleGetLogin(_ req: Request) async throws -> Response {
         let page = LoginPage()
@@ -32,14 +60,15 @@ struct LoginController: RouteCollection {
             let user = try await login.findUser(with: req)
             
             do {
-                let verified = try await login.verifyUser(user, request: req)
-                let tokens = try req.tokens.forUser(verified)
+                let authorized = try await login.authenticateUser(user, request: req)
+                let tokens = try req.tokens.forUser(authorized)
                 try await tokens.delete()
                 
                 let newToken = try user.generateToken()
                 try await newToken.create(on: req.db)
                 req.session.authenticate(newToken)
-                return req.redirect(to: .main)
+                
+                return req.redirect(to: user.isEmailVerified ? .main : .verify)
             } catch {
                 return try await req.render(LoginPage(request: login), error: error)
             }
@@ -49,4 +78,5 @@ struct LoginController: RouteCollection {
         }
         
     }
+
 }

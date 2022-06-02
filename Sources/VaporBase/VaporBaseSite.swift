@@ -5,6 +5,7 @@ import FluentPostgresDriver
 import Vapor
 import Leaf
 import LeafKit
+import Mailgun
 
 #if canImport(AppKit)
 import AppKit
@@ -17,7 +18,7 @@ open class VaporBaseSite {
         public let name: String
         public let user: String
         public let password: String
-
+        
         public init(host: String = "localhost", name: String = "vaporbase", user: String = "vapor", password: String = "vapor") {
             self.host = host
             self.name = name
@@ -27,10 +28,13 @@ open class VaporBaseSite {
     }
 
     public let name: String
+    public let email: String
     public let database: Database
+    public static var codeLength: Int = 6  // TODO: make this an instance property; the problem is that validations() needs it, and it's static
     
-    public init(name: String, database: Database) {
+    public init(name: String, email: String, database: Database) {
         self.name = name
+        self.email = email
         self.database = database
     }
     
@@ -73,9 +77,11 @@ open class VaporBaseSite {
     
     private func openLocally(_ app: Application) {
 #if canImport(AppKit)
-        let configuration = app.http.server.configuration
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now().advanced(by: .seconds(1))) {
-            NSWorkspace.shared.open(URL(string: "http://\(configuration.hostname):\(configuration.port)/")!)
+            if var components = URLComponents(string: app.httpAddress) {
+                components.scheme = "http" // for local hosting, just use http
+                NSWorkspace.shared.open(components.url!)
+            }
         }
 #endif
     }
@@ -112,7 +118,7 @@ open class VaporBaseSite {
     
     public func setupDefaultSources(_ app: Application, sources: LeafSources) throws {
         let path = Bundle.module.url(forResource: "Views", withExtension: nil)!.path
-        print("VaporBase built-in views path is: \(path)")
+        app.logger.debug("VaporBase built-in views path is: \(path)")
         let source = NIOLeafFiles(fileio: app.fileio,
                                   limits: [.toSandbox, .requireExtensions], // Heroku bundle files are inside `.swift-bin`, which can be mistaken for being invisible
                                   sandboxDirectory: path,
@@ -122,7 +128,30 @@ open class VaporBaseSite {
     }
     
     public func setupDefaultMiddleware(_ app: Application) {
-        app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))     // serve files from /Public folder
+        // serve files from /Public folder
+        app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+
+        // setup mailgun
+        let environmentKey = Environment.get("MAILGUN_API_KEY")
+
+        let key: String?
+        #if DEBUG
+            // look for a local key file in the working directory
+            // NB: this file is for local testing only, and should not be committed to source control
+            let url = URL(fileURLWithPath: ".mailgun")
+        let localKey = try? String(contentsOf: url, encoding: .utf8).trimmingCharacters(in:.whitespacesAndNewlines)
+            key = localKey ?? environmentKey
+        #else
+            key = environmentKey
+        #endif
+
+        guard let key = key else {
+            fatalError("Mailgun key not found.")
+        }
+
+        app.mailgun.configuration = .init(apiKey: key)
+        app.mailgun.defaultDomain = .elegantchaos
+
     }
     
     open func registerRepositories(_ app: Application) {
@@ -151,7 +180,6 @@ open class VaporBaseSite {
         try protectedRoutes.register(collection: UserController())
         try protectedRoutes.register(collection: MainController())
         try protectedRoutes.register(collection: AdminController())
-        try app.register(collection: RegistrationController())
     }
     
     open func setupMigrations(_ app: Application) {
@@ -193,7 +221,7 @@ struct SiteKey: StorageKey {
 }
 
 
-extension Application {
+public extension Application {
     var site: VaporBaseSite {
         get {
             self.storage[SiteKey.self]!
@@ -203,4 +231,26 @@ extension Application {
             self.storage[SiteKey.self] = newValue
         }
     }
+    
+    var httpAddress: String {
+        let configuration = http.server.configuration
+        var address = "https://\(configuration.hostname)"
+        if configuration.port != 443 {
+            address += ":\(configuration.port)"
+        }
+        
+        return address
+    }
+    
+    var httpURL: URL {
+        return URL(string: httpAddress)!
+    }
+    
+    var httpShort: String {
+        return http.server.configuration.hostname
+    }
+}
+
+extension MailgunDomain {
+    static var elegantchaos: MailgunDomain { .init("mailgun.elegantchaos.com", .us) }
 }

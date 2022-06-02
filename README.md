@@ -9,6 +9,7 @@ It supplies pages to handle:
 
 - registering
 - logging in
+- verifying email address (via mailgun)
 - display a basic profile page for the logged in user
 - updating a user's name/password
 - displaying an admin page
@@ -22,6 +23,15 @@ It is expected that a client of this library will:
 - replace some or all of the default `.leaf` files
 
 A test project which uses this package as a client [can be found here](https://github.com/elegantchaos/VaporBaseTest).
+
+## What's Missing
+
+Lots of stuff! Including:
+
+- quite a lot of error handling
+- validating a changed email address
+- password reset request
+
 
 ## Local Testing
 

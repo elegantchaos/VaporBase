@@ -69,7 +69,7 @@ struct AdminController: RouteCollection {
     }
 
     func handlePostAdminUser(_ req: Request, for loggedInUser: User) async throws -> Response {
-        let response = try AdminUserPage.FormData(from: req)
+        let response = try AdminUserPage.Form(from: req)
 
         let userID = try req.parameters.require("user", as: UUID.self)
         guard let user = try await User.query(on: req.db).filter(\.$id == userID).first() else {

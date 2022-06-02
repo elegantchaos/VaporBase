@@ -14,8 +14,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/elegantchaos/Coercion", from: "1.0.0"),
-//        .package(url: "https://github.com/elegantchaos/Runner", from: "1.0.0"),
-        
+        .package(url: "https://github.com/vapor-community/mailgun.git", from: "5.0.0"),
+
         // 💧 Vapor.
         .package(url: "https://github.com/vapor/vapor.git", from: "4.60.3"),
         .package(url: "https://github.com/vapor/fluent.git", from: "4.4.0"),
@@ -30,8 +30,8 @@ let package = Package(
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
                 .product(name: "Leaf", package: "leaf"),
+                .product(name: "Mailgun", package: "mailgun"),
                 .product(name: "Vapor", package: "vapor"),
-//                .product(name: "Runner", package: "Runner")
             ],
             resources: [
                 .copy("Resources/Views")

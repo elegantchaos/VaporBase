@@ -10,13 +10,13 @@ import Vapor
 extension User {
     static var createMigration: Fluent.Migration {
         SimpleMigration("CreateUser", for: self) { schema in
-            let defaultValue = SQLColumnConstraintAlgorithm.default("")
             return schema
                 .id()
                 .field(.name, .string, .required)
                 .field(.email, .string, .required)
                 .field(.passwordHash, .string, .required)
-                .field(.roles, .string, .sql(defaultValue))
+                .field(.roles, .string, .required)
+                .field(.verification, .string, .required)
                 .unique(on: .email)
                 .create()
 

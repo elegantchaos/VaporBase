@@ -6,32 +6,30 @@
 import Vapor
 import Fluent
 
-struct RegisterPage: LeafPage {
+struct VerifyPage: LeafPage {
+    let message: String?
+    
+    init(message: String? = nil) {
+        self.message = message
+    }
     
     func meta(for user: User?) -> PageMetadata {
-        PageMetadata("Register", description: "Registration Page")
+        PageMetadata("Verify Email", description: "Verification Page")
     }
 
+
     /// Data sent back by form submission.
-    struct FormData: Content, PasswordFormData {
-        let name: String
-        let email: String
-        let password: String
-        let confirm: String
-        
-        func hash(with req: Request) async throws -> String {
-            return try await req.password.async.hash(password)
-        }
+    struct Form: Content, Validatable {
+        let code: String
         
         init(from req: Request) throws {
             try Self.validate(content: req)
             self = try req.content.decode(Self.self)
-            try validatePasswordsMatch()
         }
         
         static func validations(_ validations: inout Validations) {
-            validations.add("email", as: String.self, is: .email)
-            validations.addPasswordValidations(allowEmpty: false)
+            let length = VaporBaseSite.codeLength
+            validations.add("code", as: String.self, is: .alphanumeric && !.empty && .count(length...length))
         }
     }
 

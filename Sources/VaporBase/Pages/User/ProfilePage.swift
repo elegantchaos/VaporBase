@@ -24,7 +24,7 @@ struct ProfilePage: LeafPage {
         return PageMetadata(title, description: description)
     }
     
-    struct FormData: PasswordFormData {
+    struct Form: PasswordFormData {
         let name: String
         let email: String
         let password: String
