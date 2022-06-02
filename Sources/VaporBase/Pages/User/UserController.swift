@@ -57,37 +57,35 @@ struct UserController: RouteCollection {
     }
 
     func handleGetVerified(_ req: Request, user: User) async throws -> Response {
+        let code = try req.query.decode(String.self)
+        return try await handleVerification(req, user: user, rawCode: code)
+    }
+
+    func handlePostVerify(_ req: Request, user: User) async throws -> Response {
+        let form = try VerifyPage.Form(from: req)
+        return try await handleVerification(req, user: user, rawCode: form.code)
+    }
+
+    func handleVerification(_ req: Request, user: User, rawCode: String) async throws -> Response {
         guard !user.isEmailVerified else {
             return req.redirect(to: .main)
         }
-
-        let code = try req.query.decode(String.self)
+        
+        guard let code = rawCode.sanitized else {
+            let message = "The code was invalid. Please re-enter it."
+            return try await req.render(VerifyPage(message: message))
+        }
+        
         if user.verification == code {
             user.isEmailVerified = true
             try await user.save(on: req.db)
             return req.redirect(to: .main)
         }
-
+        
         let message = "The code \(code) didn't match. Please re-enter it."
         return try await req.render(VerifyPage(message: message))
     }
-
-    func handlePostVerify(_ req: Request, user: User) async throws -> Response {
-        guard !user.isEmailVerified else {
-            return req.redirect(to: .main)
-        }
-        
-        let form = try VerifyPage.Form(from: req)
-        if user.verification == form.code {
-            user.isEmailVerified = true
-            try await user.save(on: req.db)
-            return req.redirect(to: .main)
-        }
-        
-        let message = "The code \(form.code) didn't match. Please re-enter it."
-        return try await req.render(VerifyPage(message: message))
-    }
-
+    
     func handleGetLogout(_ req: Request) throws -> Response {
         req.auth.logout(User.self)
         req.session.destroy()
