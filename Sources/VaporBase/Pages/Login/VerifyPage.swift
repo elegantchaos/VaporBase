@@ -19,7 +19,7 @@ struct VerifyPage: LeafPage {
 
 
     /// Data sent back by form submission.
-    struct FormData: Content, Validatable {
+    struct Form: Content, Validatable {
         let code: String
         
         init(from req: Request) throws {
@@ -28,8 +28,8 @@ struct VerifyPage: LeafPage {
         }
         
         static func validations(_ validations: inout Validations) {
-            //            validations.add("email", as: String.self, is: .)
-            //            validations.addPasswordValidations(allowEmpty: false)
+            let length = VaporBaseSite.codeLength
+            validations.add("code", as: String.self, is: .alphanumeric && !.empty && .count(length...length))
         }
     }
 

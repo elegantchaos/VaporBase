@@ -18,7 +18,7 @@ open class VaporBaseSite {
         public let name: String
         public let user: String
         public let password: String
-
+        
         public init(host: String = "localhost", name: String = "vaporbase", user: String = "vapor", password: String = "vapor") {
             self.host = host
             self.name = name
@@ -30,6 +30,7 @@ open class VaporBaseSite {
     public let name: String
     public let email: String
     public let database: Database
+    public static var codeLength: Int = 6  // TODO: make this an instance property; the problem is that validations() needs it, and it's static
     
     public init(name: String, email: String, database: Database) {
         self.name = name

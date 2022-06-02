@@ -13,7 +13,7 @@ struct RegisterPage: LeafPage {
     }
 
     /// Data sent back by form submission.
-    struct FormData: Content, PasswordFormData {
+    struct Form: Content, PasswordFormData {
         let name: String
         let email: String
         let password: String

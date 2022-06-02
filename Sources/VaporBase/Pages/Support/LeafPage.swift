@@ -14,11 +14,6 @@ protocol LeafPage: Codable {
 extension LeafPage {
 }
 
-struct SiteMetadata: Codable {
-    let title: String
-    let email: String
-}
-
 struct RenderContext<Page>: Codable where Page: LeafPage {
     internal init(page: Page, user: User?, error: String?, site: VaporBaseSite) {
         let file = String(describing: Page.self)

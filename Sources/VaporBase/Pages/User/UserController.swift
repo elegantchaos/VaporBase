@@ -45,7 +45,7 @@ struct UserController: RouteCollection {
         
         if user.verification.isEmpty {
             // generate a new code and send a verification email
-            user.verification = generateCode()
+            user.verification = generateCode(length: VaporBaseSite.codeLength)
             try await user.save(on: req.db)
             await sendVerificationMessage(req, user: user)
         }
@@ -59,7 +59,7 @@ struct UserController: RouteCollection {
             return req.redirect(to: .main)
         }
         
-        let form = try VerifyPage.FormData(from: req)
+        let form = try VerifyPage.Form(from: req)
         if user.verification == form.code {
             user.verification = "verified"
             try await user.save(on: req.db)
@@ -107,7 +107,7 @@ struct UserController: RouteCollection {
         }
     }
 
-    func generateCode(length: Int = 6) -> String {
+    func generateCode(length: Int) -> String {
         let components = "0123456789ABCDFGHJKLMNPQRTVWXY"
         var code = ""
         for _ in 0..<length {

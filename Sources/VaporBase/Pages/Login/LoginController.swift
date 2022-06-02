@@ -29,7 +29,7 @@ struct LoginController: RouteCollection {
     }
     
     func handlePostRegister(_ req: Request) async throws -> Response {
-        let form = try RegisterPage.FormData(from: req)
+        let form = try RegisterPage.Form(from: req)
         let hash = try await form.hash(with: req)
         let user = User(name: form.name, email: form.email, passwordHash: hash)
         let users = try await req.users.all()
